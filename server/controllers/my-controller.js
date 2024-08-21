@@ -40,9 +40,22 @@ module.exports = ({ strapi }) => ({
 
     let response = await strapi.db.query(uid).findMany(query);
 
+    const buildRelationHeaders = (relations) => {
+      const relationsValues = [];
+      Object.keys(relations).map((relation) => {
+        if (relations[relation].column) {
+          relations[relation].column.forEach((c) => {
+            relationsValues.push(`${relation} - ${c}`);
+          });
+        }
+      });
+
+      return relationsValues;
+    };
+
     let header = [
       ...excel?.config[uid]?.columns,
-      ...Object.keys(excel?.config[uid]?.relation),
+      ...buildRelationHeaders(excel?.config[uid]?.relation),
     ];
 
     let where = {};
@@ -176,21 +189,27 @@ module.exports = ({ strapi }) => ({
       // Restructure relation data based on the specified structure
       for (const key in objectStructure.relation) {
         if (key in item) {
-          const column = objectStructure.relation[key].column[0];
-          if (item[key] && typeof item[key] === "object") {
-            if (Array.isArray(item[key]) && item[key].length > 0) {
-              restructuredItem[key] = item[key]
-                .map((obj) => obj[column])
-                .join(" ");
+          objectStructure.relation[key].column.forEach((c) => {
+            const column = c;
+
+            if (item[key] && typeof item[key] === "object") {
+              if (Array.isArray(item[key]) && item[key].length > 0) {
+                restructuredItem[key] = item[key]
+                  .map((obj) => obj[column])
+                  .join(" ");
+              } else {
+                console.log("else column: ", { column, key });
+                restructuredItem[`${key} - ${column}`] = item[key][column];
+              }
             } else {
-              restructuredItem[key] = item[key][column];
+              // Handle the case where item[key] is not an object
+              restructuredItem[key] = null; // Or handle it as needed
             }
-          } else {
-            // Handle the case where item[key] is not an object
-            restructuredItem[key] = null; // Or handle it as needed
-          }
+          });
         }
       }
+
+      console.log(restructuredItem);
 
       return restructuredItem;
     });
