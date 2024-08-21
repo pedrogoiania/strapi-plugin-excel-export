@@ -198,7 +198,6 @@ module.exports = ({ strapi }) => ({
                   .map((obj) => obj[column])
                   .join(" ");
               } else {
-                console.log("else column: ", { column, key });
                 restructuredItem[`${key} - ${column}`] = item[key][column];
               }
             } else {
@@ -208,8 +207,6 @@ module.exports = ({ strapi }) => ({
           });
         }
       }
-
-      console.log(restructuredItem);
 
       return restructuredItem;
     });
