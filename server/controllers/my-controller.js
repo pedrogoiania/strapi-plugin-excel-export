@@ -101,7 +101,7 @@ module.exports = ({ strapi }) => {
         // Extract column headers dynamically from the data
         let headers = [
           ...excel?.config[uid]?.columns,
-          ...Object.keys(excel?.config[uid]?.relation),
+          ...buildRelationHeaders(excel?.config[uid]?.relation),
         ];
 
         // // Transform the original headers to the desired format
